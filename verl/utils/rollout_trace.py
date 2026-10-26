@@ -110,13 +110,12 @@ class RolloutTraceConfig:
                 try:
                     import fcntl
 
-                    lock_fd = open(db_path + ".lock", "w")
-                    fcntl.flock(lock_fd, fcntl.LOCK_EX)
-                    try:
-                        mlflow.set_experiment(project_name)
-                    finally:
-                        fcntl.flock(lock_fd, fcntl.LOCK_UN)
-                        lock_fd.close()
+                    with open(db_path + ".lock", "w") as lock_fd:
+                        fcntl.flock(lock_fd, fcntl.LOCK_EX)
+                        try:
+                            mlflow.set_experiment(project_name)
+                        finally:
+                            fcntl.flock(lock_fd, fcntl.LOCK_UN)
                 except ImportError:
                     # non-POSIX fallback: proceed without cross-process serialization
                     mlflow.set_experiment(project_name)
